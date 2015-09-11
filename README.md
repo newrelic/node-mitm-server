@@ -21,13 +21,14 @@ var http = require('http')
 var url = require('url')
 
 var options = {
-  port: 8081,
   certDir: './cert-cache',
   caCertPath: './cacert.pem',
   caKeyPath: './cakey.pem'
 }
 
 var server = new MITMServer(options, handler)
+
+server.listen(8081)
 
 function handler (req, res, secure) {
   if (Math.random() > .5) {
@@ -68,7 +69,6 @@ echo \"02\" > ca/cacert.srl
 `new MITMServer(options, handler) -> mitmServerInstance`
 
 #### options
-* port (required): port for the main proxy server,
 * certDir (required): path to the folder where certs will be created and stored
 * caCertPath (required): path to the root certificate used to generate new
   certs for https requests.
@@ -76,6 +76,8 @@ echo \"02\" > ca/cacert.srl
 * serverTimeout (optional): an https server is created for each domain accessed
   via https. This value determines how long a server will stay open (in ms)
   without any activity.
+* port (optional): port for the main proxy server, if passed constructor will
+  call server.listen
 
 #### handler
 
@@ -84,6 +86,16 @@ handler will be passed 3 arguments for each inbound request.
  * req: the request object
  * res: the response object
  * secure: a boolean which indicates if the request was made using https
+
+### instance methods
+
+#### `listen(port)`
+  call once with the port the proxy should be listening on. If port is passed
+  in options object during server construction, the constructor will call
+  listen, and this method should not be called again.
+
+  * port (required): an unused port, some ports (eg. 80) will require elevated
+    privalages.  Passing 0 will assign a random unused port.
 
 ### instance events
 

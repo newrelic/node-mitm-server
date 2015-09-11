@@ -17,8 +17,16 @@ function MITMServer (options, handler) {
   this.serverTimeout = options.serverTimeout || 60000
   this.servers = {}
   this.httpServer = http.createServer()
-  this.initServer(this.httpServer, 'localhost', options.port, false)
   this.httpServer.proxy = this
+  this.started = false
+  // start listening if port is defined for backwards compatibility
+  if (typeof options.port !== 'undefined') this.listen(options.port)
+}
+
+MITMServer.prototype.listen = function listen (port, cb) {
+  if (this.started) throw new Error('server already listening')
+  this.started = true
+  this.initServer(this.httpServer, 'localhost', port, false, cb)
 }
 
 MITMServer.prototype.getSecureServer = function getSecureServer (hostname, done) {
@@ -46,10 +54,10 @@ MITMServer.prototype.createSecureServer = function createSecureServer (hostname,
   }
 }
 
-MITMServer.prototype.initServer = function initServer (server, hostname, port, ssl) {
+MITMServer.prototype.initServer = function initServer (server, hostname, port, ssl, cb) {
   this.log('debug', 'adding listeners to server for ' + hostname)
   var proxy = this
-  server.listen(port)
+  server.listen(port, cb)
   server.port = server.address().port
   server.hostname = hostname
   server.on('request', onRequest)
