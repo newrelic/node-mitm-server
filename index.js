@@ -54,7 +54,7 @@ MITMServer.prototype.createSecureServer = function createSecureServer (hostname,
   }
 }
 
-MITMServer.prototype.initServer = function initServer (server, hostname, port, ssl, cb) {
+MITMServer.prototype.initServer = function initServer (server, hostname, port, secure, cb) {
   this.log('debug', 'adding listeners to server for ' + hostname)
   var proxy = this
   server.listen(port, cb)
@@ -67,11 +67,14 @@ MITMServer.prototype.initServer = function initServer (server, hostname, port, s
   // only emitted when trying to establish a tunnel
   server.on('connect', onConnect)
 
+  // probably web sockets
+  server.on('upgrade', onUpgrade)
+
   function onRequest (req, res) {
     proxy.log('debug', 'received request for ' + hostname)
     req.on('error', proxy.onError.bind(this))
     res.on('error', proxy.onError.bind(this))
-    proxy.handler(req, res, ssl)
+    proxy.handler(req, res, secure)
   }
 
   function onConnect (req, socket) {
@@ -101,6 +104,11 @@ MITMServer.prototype.initServer = function initServer (server, hostname, port, s
       conn.on('error', proxy.onError.bind(proxy))
       socket.on('error', proxy.onError.bind(proxy))
     }
+  }
+
+  function onUpgrade (req, socket, head) {
+    if (!proxy.listeners('upgrade').length) return socket.close()
+    proxy.emit('upgrade', req, socket, head, secure)
   }
 }
 

@@ -95,9 +95,23 @@ handler will be passed 3 arguments for each inbound request.
   listen, and this method should not be called again.
 
   * port (required): an unused port, some ports (eg. 80) will require elevated
-    privalages.  Passing 0 will assign a random unused port.
+    privileges.  Passing 0 will assign a random unused port.
 
 ### instance events
+
+#### `upgrade`
+
+emitted anytime a proxied request requests an upgrade.  This request will not
+be passed to the handler.  If this event is not listened for, the request will
+be closed. This event is emitted with the same 3 arguments as a node HTTP
+server's `upgrade` event, as well as a 4th `secure` argument to indicate if the
+request was made using https.
+
+##### event arguments
+* request: the request that requested the upgrade
+* socket: the socket for the request
+* head: a buffer of data already read off of the socket
+* ssl: a boolean which indicates if this is was a secure connection
 
 #### `error`
 
