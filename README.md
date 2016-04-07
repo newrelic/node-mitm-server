@@ -37,7 +37,7 @@ function handler (req, res, secure) {
     return
   }
 
-  var module = this.secure ? https : http
+  var module = secure ? https : http
   var port = req.headers.host.split(':')[1]
   var reqOptions = {
     method: req.method,
