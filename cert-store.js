@@ -74,7 +74,7 @@ CertStore.prototype.makeCert = function makeCert (hostname, done) {
   var csrCmd = 'openssl req -new -key ' + keyPath + ' -out ' + csrPath +
     '  -nodes -subj "/C=US/ST=OR/L=PDX/O=NR/CN=' + hostname + '"'
   var certCmd = 'openssl x509 -req -days 3650 -CA ' + this.caCert + ' -CAkey ' +
-    this.caKey + ' -in ' + csrPath + ' -out ' + certPath
+    this.caKey + ' -in ' + csrPath + ' -out ' + certPath + ' -set_serial ' + Math.floor(Number.MAX_SAFE_INTEGER * Math.random())
 
   var commands = [keyCmd, csrCmd, certCmd]
 
