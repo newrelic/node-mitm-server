@@ -93,6 +93,8 @@ MITMServer.prototype.initServer = function initServer (server, hostname, port, s
       if (err) {
         proxy.log('error', 'could not retreive secure server for ' + hostname)
         proxy.onError(err)
+        socket.destroy()
+        return
       }
       var conn = net.connect(server.port, 'localhost', function () {
         socket.write('HTTP/1.1 200 OK\r\n\r\n')
