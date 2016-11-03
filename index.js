@@ -110,8 +110,9 @@ MITMServer.prototype.initServer = function initServer (server, hostname, port, s
 
   function onUpgrade (req, socket, head) {
     if (!proxy.listeners('upgrade').length) {
-      console.error('received upgrade request, but no upgrade handlers were registered')
-      return socket.destroy()
+      socket.destroy()
+      proxy.log('warn', 'received upgrade request, but no upgrade handlers were registered')
+      return
     }
     proxy.emit('upgrade', req, socket, head, secure)
   }
