@@ -19,14 +19,34 @@ function MITMServer (options, handler) {
   this.httpServer = http.createServer()
   this.httpServer.proxy = this
   this.started = false
+  this.port = options.port
+  this.hostname = options.hostname
+  this.backlog = options.backlog
   // start listening if port is defined for backwards compatibility
-  if (typeof options.port !== 'undefined') this.listen(options.port)
+  if (typeof this.port !== 'undefined') this.listen(this.port)
 }
 
-MITMServer.prototype.listen = function listen (port, cb) {
+MITMServer.prototype.listen = function listen (port, hostname, backlog, cb) {
   if (this.started) throw new Error('server already listening')
   this.started = true
-  this.initServer(this.httpServer, 'localhost', port, false, cb)
+  if (!cb && typeof backlog === 'function') {
+    cb = backlog
+    backlog = null
+  } else if (!backlog && !cb && typeof hostname === 'function') {
+    cb = hostname
+    backlog = null
+    hostname = null
+  }
+
+  if (hostname) {
+    this.hostname = hostname
+  }
+
+  if (backlog) {
+    this.backlog = backlog
+  }
+
+  this.initServer(this.httpServer, this.hostname || 'localhost', port, false)
 }
 
 MITMServer.prototype.getSecureServer = function getSecureServer (hostname, done) {
@@ -57,7 +77,15 @@ MITMServer.prototype.createSecureServer = function createSecureServer (hostname,
 MITMServer.prototype.initServer = function initServer (server, hostname, port, secure, cb) {
   this.log('debug', 'adding listeners to server for ' + hostname)
   var proxy = this
-  server.listen(port, cb)
+
+  if (this.backlog && this.hostname) {
+    server.listen(port, this.hostname, this.backlog, cb)
+  } else if (this.hostname) {
+    server.listen(port, this.hostname, cb)
+  } else {
+    server.listen(port, cb)
+  }
+
   server.port = server.address().port
   server.hostname = hostname
   server.on('request', onRequest)
@@ -96,7 +124,7 @@ MITMServer.prototype.initServer = function initServer (server, hostname, port, s
         socket.destroy()
         return
       }
-      var conn = net.connect(server.port, 'localhost', function () {
+      var conn = net.connect(server.port, this.hostname || 'localhost', function () {
         socket.write('HTTP/1.1 200 OK\r\n\r\n')
         conn.pipe(socket)
         socket.pipe(conn)
