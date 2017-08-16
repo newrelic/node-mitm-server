@@ -12,6 +12,8 @@ generate certs for each https domain.  For https requests to work correctly,
 the request application (or os) will need to either ignore ssl errors, or trust
 the root cert used by the proxy.
 
+Supersedes package 'mitm-server'
+
 ## Example
 
 ```javascript
