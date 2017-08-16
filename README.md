@@ -15,7 +15,7 @@ the root cert used by the proxy.
 ## Example
 
 ```javascript
-var MITMServer = require('mitm-server')
+var MITMServer = require('@newrelic/mitm-server')
 var https = require('https')
 var http = require('http')
 var url = require('url')
