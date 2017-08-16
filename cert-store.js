@@ -67,14 +67,17 @@ CertStore.prototype.loadCert = function loadCert (hostname, cb) {
 
 CertStore.prototype.makeCert = function makeCert (hostname, done) {
   this.log('info', 'creating certs for ' + hostname)
+  const openssl_location = path.join(__dirname, './openssl.cnf')
   var keyPath = path.resolve(this.dir, hostname + '-key.pem')
   var csrPath = path.resolve(this.dir, hostname + '.csr')
   var certPath = path.resolve(this.dir, hostname + '-cert.pem')
   var keyCmd = 'openssl genrsa -out ' + keyPath + ' 1024'
-  var csrCmd = 'openssl req -new -key ' + keyPath + ' -out ' + csrPath +
-    '  -nodes -subj "/C=US/ST=OR/L=PDX/O=NR/CN=' + hostname + '"'
-  var certCmd = 'openssl x509 -sha256 -req -days 3650 -CA ' + this.caCert + ' -CAkey ' +
-    this.caKey + ' -in ' + csrPath + ' -out ' + certPath + ' -set_serial ' + Math.floor(Number.MAX_SAFE_INTEGER * Math.random())
+  var csrCmd = 'ALTNAME="DNS:' + hostname + '" openssl req -new -key ' + keyPath + ' -out ' + csrPath +
+    '  -nodes -subj "/C=US/ST=OR/L=PDX/O=NR/CN=' + hostname + '"' +
+    ' -extensions v3_req -config ' + openssl_location
+  var certCmd = 'ALTNAME="DNS:' + hostname + '" openssl x509 -sha256 -req -days 3650 -CA ' + this.caCert + ' -CAkey ' +
+    this.caKey + ' -in ' + csrPath + ' -out ' + certPath + ' -set_serial ' + Math.floor(Number.MAX_SAFE_INTEGER * Math.random()) +
+    ' -extensions v3_req -extfile ' + openssl_location
 
   var commands = [keyCmd, csrCmd, certCmd]
 
