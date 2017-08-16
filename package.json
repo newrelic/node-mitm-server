@@ -1,5 +1,5 @@
 {
-  "name": "mitm-server",
+  "name": "@newrelic/mitm-server",
   "version": "1.7.0",
   "description": "mitm proxy server",
   "main": "index.js",
